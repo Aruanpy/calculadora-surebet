@@ -1,508 +1,508 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#121212">
-  <title>Calculadora Surebet</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-start: #0f0f10;
-      --bg-end: #1a1a2e;
-      --card: rgba(22, 24, 40, 0.95);
-      --primary: #7f5af0;
-      --accent: #2cb67d;
-      --text: #ffffff;
-      --input-bg: rgba(35, 37, 60, 0.8);
-      --border: #3f3f5a;
-      --highlight: #00ffcb;
-      --profit-bg: #223323;
-      --profit-color: #36ff8a;
-      --blur: blur(14px);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Surebet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #0f0f10;
+            --bg-end: #1a1a2e;
+            --card: rgba(22, 24, 40, 0.95);
+            --primary: #7f5af0;
+            --accent: #2cb67d;
+            --text: #ffffff;
+            --input-bg: rgba(35, 37, 60, 0.8);
+            --border: #3f3f5a;
+            --highlight: #00ffcb;
+            --profit-bg: #223323;
+            --profit-color: #36ff8a;
+            --blur: blur(14px);
+        }
 
-    * { box-sizing: border-box; }
+        * { box-sizing: border-box; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 2rem;
-      min-height: 100vh;
-      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-      color: var(--text);
-      backdrop-filter: var(--blur);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--text);
+            backdrop-filter: var(--blur);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .container {
-      background: var(--card);
-      padding: 2.5rem;
-      border-radius: 1.5rem;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-      width: 100%;
-      max-width: 960px;
-    }
+        .container {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            width: 100%; max-width: 960px;
+        }
 
-    h1 {
-      text-align: center;
-      color: var(--primary);
-      font-size: 2.2rem;
-      margin-bottom: 2.5rem;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-    }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 2.5rem;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
 
-    label {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--highlight);
-    }
+        label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--highlight);
+        }
 
-    .input-group, .results, .total-investment-group {
-      margin-bottom: 2rem;
-    }
+        .input-group, .results, .total-investment-group {
+            margin-bottom: 2rem;
+        }
 
-    select, input[type="number"] {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      background: var(--input-bg);
-      color: var(--text);
-      font-size: 1rem;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
-    }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 6px var(--accent);
-    }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
 
-    .house-inputs {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
+        .house-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
 
-    .house-card {
-      background: linear-gradient(160deg, rgba(95, 85, 180, 0.15), rgba(40, 40, 80, 0.35));
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border);
-    }
+        .house-card {
+            background: linear-gradient(160deg, rgba(95, 85, 180, 0.15), rgba(40, 40, 80, 0.35));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+        }
 
-    .house-card h3 {
-      margin-top: 0;
-      font-size: 1.3rem;
-      color: var(--primary);
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      margin-bottom: 1rem;
-    }
+        .house-card h3 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+        }
 
-    .results {
-      background-color: var(--input-bg);
-      padding: 1.5rem;
-      border-radius: 1rem;
-      border: 1px solid var(--border);
-      font-size: 1rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-    }
+        .results {
+            background-color: var(--input-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            font-size: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
 
-    .profit-highlight {
-      background-color: var(--profit-bg);
-      color: var(--profit-color);
-      font-weight: bold;
-      padding: 1rem;
-      margin-top: 1rem;
-      border-radius: 0.75rem;
-      text-align: center;
-      box-shadow: 0 0 12px rgba(54, 255, 138, 0.4);
-    }
+        .profit-highlight {
+            background-color: var(--profit-bg);
+            color: var(--profit-color);
+            font-weight: bold;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            box-shadow: 0 0 12px rgba(54, 255, 138, 0.4);
+        }
 
-    .toggle-button {
-      background: linear-gradient(to right, #7f5af0, #2cb67d);
-      border: none;
-      color: white;
-      padding: 0.4rem 1rem;
-      border-radius: 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.8rem;
-      margin-bottom: 0.5rem;
-    }
+        .toggle-button {
+            background: linear-gradient(to right, #7f5af0, #2cb67d);
+            border: none;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
 
-    .fix-checkbox {
-      margin-top: -0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      margin-bottom: 0.5rem;
-    }
+        .fix-checkbox {
+            margin-top: -0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
 
-    hr {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 1.5rem 0;
-    }
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--border);
+            margin: 1.5rem 0;
+        }
 
-    p {
-      margin: 0.5rem 0;
-      color: #e0e0e0;
-    }
+        p {
+            margin: 0.5rem 0;
+            color: #e0e0e0;
+        }
 
-    #loginModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(5px);
-      z-index: 1000;
-    }
+        #loginModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
 
-    .modal-content {
-      background: var(--card);
-      padding: 2rem;
-      border-radius: 1rem;
-      width: 90%;
-      max-width: 400px;
-      margin: 5% auto;
-    }
+        .modal-content {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%; max-width: 400px;
+            margin: 5% auto;
+        }
 
-    .modal-input {
-      width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-    }
+        .modal-input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+        }
 
-    .modal-button {
-      width: 100%;
-      padding: 10px;
-      background: var(--accent);
-      border: none;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+        .modal-button {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
 
-    .nav-buttons {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-  </style>
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 <body>
-  <div id="loginModal">
-    <div class="modal-content">
-      <h2 style="text-align:center;">Login</h2>
-      <input type="text" id="loginEmail" placeholder="Email" class="modal-input">
-      <input type="password" id="loginPassword" placeholder="Senha" class="modal-input">
-      <button onclick="login()" class="modal-button">Entrar</button>
-      <p style="text-align:center; margin-top:1rem;">Não tem conta? <a href="#" onclick="showRegister()" style="color:var(--highlight);">Registrar</a></p>
-    </div>
-  </div>
-
-  <div class="container" style="display:none;">
-    <div class="nav-buttons">
-      <button onclick="window.location.href='historico.html'" class="toggle-button">Ver Histórico</button>
-      <button onclick="logout()" class="toggle-button">Sair</button>
-    </div>
-    
-    <h1>Calculadora Surebet</h1>
-
-    <div class="input-group">
-      <label for="numHouses">Número de casas:</label>
-      <select id="numHouses" onchange="updateHouseInputs()">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
-    </div>
-
-    <div class="house-inputs" id="houseInputs"></div>
-
-    <div class="total-investment-group">
-      <label for="totalInvestment">Valor Total (R$):</label>
-      <input type="number" id="totalInvestment" oninput="splitTotalInvestment()">
-    </div>
-
-    <button onclick="saveBet()" class="toggle-button" style="width:100%; padding:1rem; margin-top:1rem;">Salvar Aposta</button>
-
-    <div id="preview" class="results"></div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBFMfmhWveXfy0Q4WYoJdKc_rm_A_EFrM4",
-      authDomain: "odd-caca.firebaseapp.com",
-      projectId: "odd-caca",
-      storageBucket: "odd-caca.appspot.com",
-      messagingSenderId: "574099371131",
-      appId: "1:574099371131:web:0a86ba3ac1b93da3481ede"
-    };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let houses = [];
-    let currentUser = null;
-
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        currentUser = user;
-        document.querySelector('.container').style.display = 'block';
-        document.getElementById('loginModal').style.display = 'none';
-      } else {
-        document.getElementById('loginModal').style.display = 'block';
-        document.querySelector('.container').style.display = 'none';
-      }
-    });
-
-    function showRegister() {
-      document.getElementById('loginModal').innerHTML = `
+    <div id="loginModal">
         <div class="modal-content">
-          <h2 style="text-align:center;">Registro</h2>
-          <input type="email" id="regEmail" placeholder="Email" class="modal-input">
-          <input type="password" id="regPassword" placeholder="Senha" class="modal-input">
-          <button onclick="register()" class="modal-button" style="background:var(--primary)">Registrar</button>
-          <p style="text-align:center; margin-top:1rem;">Já tem conta? <a href="#" onclick="showLogin()" style="color:var(--highlight);">Login</a></p>
+            <h2 style="text-align:center;">Login</h2>
+            <input type="text" id="loginEmail" placeholder="Email" class="modal-input">
+            <input type="password" id="loginPassword" placeholder="Senha" class="modal-input">
+            <button onclick="login()" class="modal-button">Entrar</button>
+            <p style="text-align:center; margin-top:1rem;">Não tem conta? <a href="#" onclick="showRegister()" style="color:var(--highlight);">Registrar</a></p>
         </div>
-      `;
-    }
+    </div>
 
-    function showLogin() {
-      document.getElementById('loginModal').innerHTML = `
-        <div class="modal-content">
-          <h2 style="text-align:center;">Login</h2>
-          <input type="text" id="loginEmail" placeholder="Email" class="modal-input">
-          <input type="password" id="loginPassword" placeholder="Senha" class="modal-input">
-          <button onclick="login()" class="modal-button">Entrar</button>
-          <p style="text-align:center; margin-top:1rem;">Não tem conta? <a href="#" onclick="showRegister()" style="color:var(--highlight);">Registrar</a></p>
+    <div class="container" style="display:none;">
+        <div class="nav-buttons">
+            <button onclick="window.location.href='historico.html'" class="toggle-button">Ver Histórico</button>
+            <button onclick="logout()" class="toggle-button">Sair</button>
         </div>
-      `;
-    }
+        
+        <h1>Calculadora Surebet</h1>
 
-    async function register() {
-      const email = document.getElementById('regEmail').value;
-      const password = document.getElementById('regPassword').value;
-      
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        alert('Registro bem-sucedido! Faça login.');
-        showLogin();
-      } catch (error) {
-        alert('Erro: ' + error.message);
-      }
-    }
+        <div class="input-group">
+            <label for="numHouses">Número de casas:</label>
+            <select id="numHouses" onchange="updateHouseInputs()">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
 
-    async function login() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-      } catch (error) {
-        alert('Erro: ' + error.message);
-      }
-    }
+        <div class="house-inputs" id="houseInputs"></div>
 
-    function logout() {
-      auth.signOut();
-      window.location.reload();
-    }
+        <div class="total-investment-group">
+            <label for="totalInvestment">Valor Total (R$):</label>
+            <input type="number" id="totalInvestment" oninput="splitTotalInvestment()">
+        </div>
 
-    function updateHouseInputs() {
-      const num = parseInt(document.getElementById('numHouses').value);
-      const container = document.getElementById('houseInputs');
-      container.innerHTML = '';
-      houses = [];
+        <button onclick="saveBet()" class="toggle-button" style="width:100%; padding:1rem; margin-top:1rem;">Salvar Aposta</button>
 
-      for (let i = 0; i < num; i++) {
-        houses.push({ 
-          odd: 0, 
-          commission: 0, 
-          stake: 0, 
-          adjusted: 0, 
-          prob: 0, 
-          mode: 'back', 
-          fixed: false, 
-          freebet: false 
+        <div id="preview" class="results"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCD0FMRa7_cbf-wRsu6pqFfBnQxU7rLEIk",
+            authDomain: "caca-odd-10352.firebaseapp.com",
+            projectId: "caca-odd-10352",
+            storageBucket: "caca-odd-10352.firebasestorage.app",
+            messagingSenderId: "1049022086320",
+            appId: "1:1049022086320:web:3920914317d7b6e7600f75"
+        };
+
+        // Inicialização do Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let houses = [];
+        let currentUser = null;
+
+        // Controle de autenticação
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('loginModal').style.display = 'none';
+                updateHouseInputs();
+            } else {
+                document.getElementById('loginModal').style.display = 'block';
+                document.querySelector('.container').style.display = 'none';
+            }
         });
-        
-        container.innerHTML += `
-          <div class="house-card">
-            <h3>Casa ${i + 1}</h3>
-            <div class="fix-checkbox">
-              <input type="checkbox" id="freebet${i}" onclick="toggleFreebet(${i})">
-              <label for="freebet${i}">Freebet (odd -1.0)</label>
-            </div>
-            <label>Odd:</label>
-            <input type="number" id="odd${i}" step="0.01" oninput="recalculate()">
-            <label>Comissão (%):</label>
-            <input type="number" id="com${i}" step="0.1" value="0" oninput="recalculate()">
-            <label>Aumento (%):</label>
-            <input type="number" id="inc${i}" step="1" value="0" oninput="recalculate()">
-            <button class="toggle-button" onclick="toggleMode(${i})" id="modeBtn${i}">Modo: Back</button>
-            <label>Valor (R$):</label>
-            <input type="number" id="stake${i}" step="10" oninput="updateStake(${i})">
-            <div class="fix-checkbox">
-              <input type="checkbox" id="fix${i}" onclick="toggleFix(${i})">
-              <label for="fix${i}">Fixar Valor</label>
-            </div>
-          </div>`;
-      }
-      recalculate();
-    }
 
-    function toggleFreebet(i) {
-      houses[i].freebet = !houses[i].freebet;
-      recalculate();
-    }
-
-    function toggleMode(i) {
-      houses[i].mode = houses[i].mode === 'back' ? 'lay' : 'back';
-      document.getElementById(`modeBtn${i}`).textContent = `Modo: ${houses[i].mode.charAt(0).toUpperCase() + houses[i].mode.slice(1)}`;
-      recalculate();
-    }
-
-    function toggleFix(i) {
-      houses[i].fixed = !houses[i].fixed;
-      if (!houses[i].fixed) recalculate();
-    }
-
-    function recalculate() {
-      let valid = true;
-      houses.forEach((h, i) => {
-        let odd = parseFloat(document.getElementById(`odd${i}`).value);
-        const com = parseFloat(document.getElementById(`com${i}`).value) || 0;
-        const inc = parseFloat(document.getElementById(`inc${i}`).value) || 0;
-
-        if (h.freebet) odd = Math.max(odd - 1, 1.0);
-        
-        if (!odd || odd <= 1) valid = false;
-        
-        if (h.mode === 'lay') {
-          h.adjusted = odd / (1 + com/100);
-          h.prob = (h.adjusted - 1) / h.adjusted;
-        } else {
-          const increasedProfit = (odd - 1) * (1 + inc/100);
-          h.adjusted = 1 + (increasedProfit * (1 - com/100));
-          h.prob = 1 / h.adjusted;
+        // Funções de UI
+        function showRegister() {
+            document.getElementById('loginModal').innerHTML = `
+                <div class="modal-content">
+                    <h2 style="text-align:center;">Registro</h2>
+                    <input type="email" id="regEmail" placeholder="Email" class="modal-input">
+                    <input type="password" id="regPassword" placeholder="Senha" class="modal-input">
+                    <button onclick="register()" class="modal-button">Registrar</button>
+                    <p style="text-align:center; margin-top:1rem;">Já tem conta? <a href="#" onclick="showLogin()" style="color:var(--highlight);">Login</a></p>
+                </div>
+            `;
         }
-      });
 
-      if (!valid) return;
-      
-      const sumProb = houses.reduce((acc, h) => acc + h.prob, 0);
-      sumProb < 1 ? splitTotalInvestment() : showMessage(`❌ Não é surebet (Soma: ${sumProb.toFixed(4)})`);
-    }
-
-    function splitTotalInvestment() {
-      const total = parseFloat(document.getElementById('totalInvestment').value);
-      if (isNaN(total) || total <= 0) return;
-      
-      const weights = houses.map(h => h.fixed ? 0 : (h.mode === 'lay' ? h.prob : 1 / h.adjusted));
-      const sumW = weights.reduce((a, b) => a + b, 0);
-      
-      houses.forEach((h, i) => {
-        if (!h.fixed) {
-          h.stake = total * (weights[i] / sumW);
-          document.getElementById(`stake${i}`).value = h.stake.toFixed(2);
+        function showLogin() {
+            document.getElementById('loginModal').innerHTML = `
+                <div class="modal-content">
+                    <h2 style="text-align:center;">Login</h2>
+                    <input type="text" id="loginEmail" placeholder="Email" class="modal-input">
+                    <input type="password" id="loginPassword" placeholder="Senha" class="modal-input">
+                    <button onclick="login()" class="modal-button">Entrar</button>
+                    <p style="text-align:center; margin-top:1rem;">Não tem conta? <a href="#" onclick="showRegister()" style="color:var(--highlight);">Registrar</a></p>
+                </div>
+            `;
         }
-      });
-      
-      showPreview();
-    }
 
-    function updateStake(idx) {
-      const st = parseFloat(document.getElementById(`stake${idx}`).value);
-      if (isNaN(st) || st <= 0) return;
-      
-      const h = houses[idx];
-      h.stake = st;
-      const ret = h.mode === 'back' ? st * h.adjusted : st / h.prob;
-      
-      houses.forEach((o, i) => {
-        if (i !== idx && !o.fixed) {
-          o.stake = o.mode === 'back' ? ret / o.adjusted : ret * o.prob;
-          document.getElementById(`stake${i}`).value = o.stake.toFixed(2);
+        // Funções de autenticação
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                alert('Registro bem-sucedido!');
+                showLogin();
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
         }
-      });
-      
-      document.getElementById('totalInvestment').value = houses.reduce((a, b) => a + b.stake, 0).toFixed(2);
-      showPreview();
-    }
 
-    function showPreview() {
-      const total = houses.reduce((a, b) => a + b.stake, 0);
-      const minRet = Math.min(...houses.map(h => 
-        h.mode === 'back' ? h.stake * h.adjusted : h.stake / h.prob
-      ));
-      const profit = minRet - total;
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
 
-      const out = `
-        ${houses.map((h, i) => `
-          <p>🏠 Casa ${i+1} (${h.mode}): R$ ${h.stake.toFixed(2)} ➜ R$ ${(h.mode === 'back' ? h.stake * h.adjusted : h.stake / h.prob).toFixed(2)}</p>
-        `).join('')}
-        <hr>
-        <p>💰 Total Investido: R$ ${total.toFixed(2)}</p>
-        <p>🏆 Retorno Mínimo: R$ ${minRet.toFixed(2)}</p>
-        <div class="profit-highlight">
-          💸 Lucro: R$ ${profit.toFixed(2)} (${((profit / total) * 100 || 0).toFixed(1)}%)
-        </div>
-      `;
-      
-      showMessage(out);
-    }
+        function logout() {
+            auth.signOut();
+        }
 
-    function showMessage(html) {
-      document.getElementById('preview').innerHTML = html;
-    }
+        // Funções da calculadora
+        function updateHouseInputs() {
+            const num = parseInt(document.getElementById('numHouses').value);
+            const container = document.getElementById('houseInputs');
+            container.innerHTML = '';
+            houses = [];
 
-    async function saveBet() {
-      if (!auth.currentUser) return alert('Faça login primeiro!');
-      
-      const betData = {
-        stakes: houses.map(h => h.stake),
-        profit: houses.reduce((a, b) => (b.mode === 'back' ? b.stake * b.adjusted : b.stake / b.prob) - b.stake, 0),
-        total: document.getElementById('totalInvestment').value,
-        userId: auth.currentUser.uid,
-        date: firebase.firestore.FieldValue.serverTimestamp()
-      };
+            for (let i = 0; i < num; i++) {
+                houses.push({ 
+                    odd: 0, 
+                    commission: 0, 
+                    stake: 0, 
+                    adjusted: 0, 
+                    prob: 0, 
+                    mode: 'back', 
+                    fixed: false, 
+                    freebet: false 
+                });
+                
+                container.innerHTML += `
+                    <div class="house-card">
+                        <h3>Casa ${i + 1}</h3>
+                        <div class="fix-checkbox">
+                            <input type="checkbox" id="freebet${i}" onclick="toggleFreebet(${i})">
+                            <label for="freebet${i}">Freebet (odd -1.0)</label>
+                        </div>
+                        <label>Odd:</label>
+                        <input type="number" id="odd${i}" step="0.01" oninput="recalculate()">
+                        <label>Comissão (%):</label>
+                        <input type="number" id="com${i}" step="0.1" value="0" oninput="recalculate()">
+                        <label>Aumento (%):</label>
+                        <input type="number" id="inc${i}" step="1" value="0" oninput="recalculate()">
+                        <button class="toggle-button" onclick="toggleMode(${i})" id="modeBtn${i}">Modo: Back</button>
+                        <label>Valor (R$):</label>
+                        <input type="number" id="stake${i}" step="10" oninput="updateStake(${i})">
+                        <div class="fix-checkbox">
+                            <input type="checkbox" id="fix${i}" onclick="toggleFix(${i})">
+                            <label for="fix${i}">Fixar Valor</label>
+                        </div>
+                    </div>`;
+            }
+            recalculate();
+        }
 
-      try {
-        await db.collection('bets').add(betData);
-        alert('Aposta salva com sucesso na nuvem!');
-      } catch (error) {
-        alert('Erro ao salvar: ' + error.message);
-      }
-    }
+        function toggleFreebet(i) {
+            houses[i].freebet = !houses[i].freebet;
+            recalculate();
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      updateHouseInputs();
-    });
-  </script>
+        function toggleMode(i) {
+            houses[i].mode = houses[i].mode === 'back' ? 'lay' : 'back';
+            document.getElementById(`modeBtn${i}`).textContent = `Modo: ${houses[i].mode.charAt(0).toUpperCase() + houses[i].mode.slice(1)}`;
+            recalculate();
+        }
+
+        function toggleFix(i) {
+            houses[i].fixed = !houses[i].fixed;
+            if (!houses[i].fixed) recalculate();
+        }
+
+        function recalculate() {
+            let valid = true;
+            houses.forEach((h, i) => {
+                let odd = parseFloat(document.getElementById(`odd${i}`).value);
+                const com = parseFloat(document.getElementById(`com${i}`).value) || 0;
+                const inc = parseFloat(document.getElementById(`inc${i}`).value) || 0;
+
+                if (h.freebet) odd = Math.max(odd - 1, 1.0);
+                
+                if (!odd || odd <= 1) valid = false;
+                
+                if (h.mode === 'lay') {
+                    h.adjusted = odd / (1 + com/100);
+                    h.prob = (h.adjusted - 1) / h.adjusted;
+                } else {
+                    const increasedProfit = (odd - 1) * (1 + inc/100);
+                    h.adjusted = 1 + (increasedProfit * (1 - com/100));
+                    h.prob = 1 / h.adjusted;
+                }
+            });
+
+            if (!valid) return;
+            
+            const sumProb = houses.reduce((acc, h) => acc + h.prob, 0);
+            sumProb < 1 ? splitTotalInvestment() : showMessage(`❌ Não é surebet (Soma: ${sumProb.toFixed(4)})`);
+        }
+
+        function splitTotalInvestment() {
+            const total = parseFloat(document.getElementById('totalInvestment').value);
+            if (isNaN(total) || total <= 0) return;
+            
+            const weights = houses.map(h => h.fixed ? 0 : (h.mode === 'lay' ? h.prob : 1 / h.adjusted));
+            const sumW = weights.reduce((a, b) => a + b, 0);
+            
+            houses.forEach((h, i) => {
+                if (!h.fixed) {
+                    h.stake = total * (weights[i] / sumW);
+                    document.getElementById(`stake${i}`).value = h.stake.toFixed(2);
+                }
+            });
+            
+            showPreview();
+        }
+
+        function updateStake(idx) {
+            const st = parseFloat(document.getElementById(`stake${idx}`).value);
+            if (isNaN(st) || st <= 0) return;
+            
+            const h = houses[idx];
+            h.stake = st;
+            const ret = h.mode === 'back' ? st * h.adjusted : st / h.prob;
+            
+            houses.forEach((o, i) => {
+                if (i !== idx && !o.fixed) {
+                    o.stake = o.mode === 'back' ? ret / o.adjusted : ret * o.prob;
+                    document.getElementById(`stake${i}`).value = o.stake.toFixed(2);
+                }
+            });
+            
+            document.getElementById('totalInvestment').value = houses.reduce((a, b) => a + b.stake, 0).toFixed(2);
+            showPreview();
+        }
+
+        function showPreview() {
+            const total = houses.reduce((a, b) => a + b.stake, 0);
+            const minRet = Math.min(...houses.map(h => 
+                h.mode === 'back' ? h.stake * h.adjusted : h.stake / h.prob
+            ));
+            const profit = minRet - total;
+
+            const out = `
+                ${houses.map((h, i) => `
+                    <p>🏠 Casa ${i+1} (${h.mode}): R$ ${h.stake.toFixed(2)} ➜ R$ ${(h.mode === 'back' ? h.stake * h.adjusted : h.stake / h.prob).toFixed(2)}</p>
+                `).join('')}
+                <hr>
+                <p>💰 Total Investido: R$ ${total.toFixed(2)}</p>
+                <p>🏆 Retorno Mínimo: R$ ${minRet.toFixed(2)}</p>
+                <div class="profit-highlight">
+                    💸 Lucro: R$ ${profit.toFixed(2)} (${((profit / total) * 100 || 0).toFixed(1)}%)
+                </div>
+            `;
+            
+            showMessage(out);
+        }
+
+        function showMessage(html) {
+            document.getElementById('preview').innerHTML = html;
+        }
+
+        async function saveBet() {
+            if (!currentUser) return alert('Faça login primeiro!');
+            
+            const betData = {
+                stakes: houses.map(h => h.stake),
+                profit: houses.reduce((a, b) => (b.mode === 'back' ? b.stake * b.adjusted : b.stake / b.prob) - b.stake, 0),
+                total: document.getElementById('totalInvestment').value,
+                userId: currentUser.uid,
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('bets').add(betData);
+                alert('Aposta salva com sucesso!');
+            } catch (error) {
+                alert('Erro ao salvar: ' + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHouseInputs();
+        });
+    </script>
 </body>
 </html>
