@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Apostas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-start: #0f0f10;
+      --bg-end: #1a1a2e;
+      --card: rgba(22, 24, 40, 0.95);
+      --primary: #7f5af0;
+      --accent: #2cb67d;
+      --text: #ffffff;
+      --input-bg: rgba(35, 37, 60, 0.8);
+      --border: #3f3f5a;
+      --highlight: #00ffcb;
+      --profit-bg: #223323;
+      --profit-color: #36ff8a;
+      --blur: blur(14px);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0; padding: 2rem;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text);
+      backdrop-filter: var(--blur);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: var(--card);
+      padding: 2.5rem;
+      border-radius: 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      width: 100%; max-width: 1200px;
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2.2rem;
+      margin-bottom: 2.5rem;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .toggle-button {
+      background: linear-gradient(to right, #7f5af0, #2cb67d);
+      border: none;
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    .day-cell {
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--input-bg);
+      transition: all 0.2s;
+    }
+    .day-cell:hover {
+      background: var(--primary);
+    }
+    .has-bets {
+      background: var(--profit-bg);
+    }
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .stats-sidebar {
+      background: var(--input-bg);
+      padding: 1.5rem;
+      border-radius: 1rem;
+    }
+    .bets-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 500px;
+      z-index: 1000;
+    }
+    .bets-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .bet-item {
+      background: var(--profit-bg);
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-buttons">
+      <button onclick="window.location.href='index.html'" class="toggle-button">Voltar à Calculadora</button>
+      <button onclick="logout()" class="toggle-button">Sair</button>
+    </div>
+    
+    <h1>Histórico Financeiro</h1>
+    
+    <div class="month-header">
+      <button onclick="changeMonth(-1)" class="toggle-button">&lt; Mês Anterior</button>
+      <h2 id="currentMonth"></h2>
+      <button onclick="changeMonth(1)" class="toggle-button">Próximo Mês &gt;</button>
+    </div>
+
+    <div class="calendar">
+      <div>
+        <div class="calendar-grid" id="calendar"></div>
+      </div>
+      
+      <div class="stats-sidebar">
+        <h3>Resumo</h3>
+        <div class="profit-highlight" id="monthProfit"></div>
+        <div class="profit-highlight" id="yearProfit"></div>
+        <div class="profit-highlight" id="allTimeProfit"></div>
+      </div>
+    </div>
+
+    <canvas id="profitChart" style="margin-top: 2rem;"></canvas>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let userBets = [];
+    let currentDate = new Date();
+
+    document.body.onload = () => {
+      const user = localStorage.getItem('currentUser');
+      if(!user) window.location = 'index.html';
+      
+      currentUser = user;
+      const users = JSON.parse(localStorage.getItem('users')) || {};
+      userBets = users[user]?.bets || [];
+      
+      const now = new Date();
+      currentDate = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate()
+      ));
+      
+      updateCalendar();
+      updateStats();
+      renderChart();
+    }
+
+    function formatDateUTC(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleDateString('pt-BR', {
+        timeZone: 'UTC',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function formatDateTimeUTC(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleString('pt-BR', {
+        timeZone: 'UTC',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function updateCalendar() {
+      const calendarEl = document.getElementById('calendar');
+      const monthName = currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+      document.getElementById('currentMonth').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+      calendarEl.innerHTML = '';
+
+      const firstDay = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1);
+      const lastDay = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth() + 1, 0);
+
+      for(let i = 0; i < firstDay.getUTCDay(); i++) {
+        calendarEl.innerHTML += `<div class="day-cell"></div>`;
+      }
+
+      for(let day = 1; day <= lastDay.getUTCDate(); day++) {
+        const dateObj = new Date(Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          day
+        ));
+        
+        const dateStr = dateObj.toISOString().split('T')[0];
+        
+        const dailyBets = userBets.filter(b => {
+          const betDate = new Date(b.date).toISOString().split('T')[0];
+          return betDate === dateStr;
+        });
+
+        const profit = dailyBets.reduce((a, b) => a + parseFloat(b.profit), 0);
+        
+        const cell = document.createElement('div');
+        cell.className = `day-cell ${dailyBets.length > 0 ? 'has-bets' : ''}`;
+        cell.innerHTML = `
+          <div>${day}</div>
+          <small style="color: ${profit >= 0 ? '#2cb67d' : '#ff4d4d'}">${profit.toFixed(2)}</small>
+        `;
+        cell.onclick = () => showDayBets(dateStr);
+        calendarEl.appendChild(cell);
+      }
+    }
+
+    function showDayBets(date) {
+      const bets = userBets.filter(b => {
+        const betDate = new Date(b.date).toISOString().split('T')[0];
+        return betDate === date;
+      });
+
+      const modal = document.createElement('div');
+      modal.className = 'bets-modal';
+      modal.innerHTML = `
+        <h3>Apostas de ${formatDateUTC(date)}</h3>
+        <div class="bets-list">
+          ${bets.map((bet, index) => `
+            <div class="bet-item">
+              <p>${index+1}. Valor Total: R$ ${bet.total}</p>
+              <p>Lucro: R$ ${bet.profit.toFixed(2)}</p>
+              <small>${formatDateTimeUTC(bet.date)}</small>
+            </div>
+          `).join('')}
+          ${bets.length === 0 ? '<p>Nenhuma aposta neste dia</p>' : ''}
+        </div>
+        <button onclick="this.parentElement.remove(); document.querySelector('.overlay').remove()" 
+          class="toggle-button" style="margin-top: 1rem; width: 100%">
+          Fechar
+        </button>
+      `;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = () => {
+        modal.remove();
+        overlay.remove();
+      };
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(modal);
+    }
+
+    function updateStats() {
+      const monthProfit = userBets
+        .filter(b => {
+          const d = new Date(b.date);
+          return d.getUTCMonth() === currentDate.getUTCMonth() && 
+                 d.getUTCFullYear() === currentDate.getUTCFullYear();
+        })
+        .reduce((a, b) => a + parseFloat(b.profit), 0);
+
+      const yearProfit = userBets
+        .filter(b => new Date(b.date).getUTCFullYear() === currentDate.getUTCFullYear())
+        .reduce((a, b) => a + parseFloat(b.profit), 0);
+
+      const allTimeProfit = userBets.reduce((a, b) => a + parseFloat(b.profit), 0);
+
+      document.getElementById('monthProfit').textContent = `Lucro do Mês: R$ ${monthProfit.toFixed(2)}`;
+      document.getElementById('yearProfit').textContent = `Lucro do Ano: R$ ${yearProfit.toFixed(2)}`;
+      document.getElementById('allTimeProfit').textContent = `Lucro Total: R$ ${allTimeProfit.toFixed(2)}`;
+    }
+
+    function changeMonth(offset) {
+      const newMonth = currentDate.getUTCMonth() + offset;
+      currentDate = new Date(Date.UTC(
+        currentDate.getUTCFullYear(),
+        newMonth,
+        1
+      ));
+      updateCalendar();
+      updateStats();
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('profitChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: userBets.map(b => formatDateTimeUTC(b.date)),
+          datasets: [{
+            label: 'Lucro por Aposta',
+            data: userBets.map(b => b.profit),
+            borderColor: '#2cb67d',
+            backgroundColor: 'rgba(44, 182, 125, 0.1)',
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: '#fff' }
+            },
+            x: { 
+              grid: { display: false },
+              ticks: { color: '#fff' }
+            }
+          }
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
