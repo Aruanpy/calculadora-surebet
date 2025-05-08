@@ -6,6 +6,9 @@
   <title>Histórico de Apostas</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
   <style>
     :root {
       --bg-start: #0f0f10;
@@ -21,10 +24,13 @@
       --profit-color: #36ff8a;
       --blur: blur(14px);
     }
+
     * { box-sizing: border-box; }
+
     body {
       font-family: 'Inter', sans-serif;
-      margin: 0; padding: 2rem;
+      margin: 0;
+      padding: 2rem;
       min-height: 100vh;
       background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
       color: var(--text);
@@ -33,14 +39,17 @@
       align-items: center;
       justify-content: center;
     }
+
     .container {
       background: var(--card);
       padding: 2.5rem;
       border-radius: 1.5rem;
       border: 1px solid var(--border);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-      width: 100%; max-width: 1200px;
+      width: 100%;
+      max-width: 1200px;
     }
+
     h1 {
       text-align: center;
       color: var(--primary);
@@ -48,11 +57,13 @@
       margin-bottom: 2.5rem;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     }
+
     .nav-buttons {
       display: flex;
       gap: 1rem;
       margin-bottom: 2rem;
     }
+
     .toggle-button {
       background: linear-gradient(to right, #7f5af0, #2cb67d);
       border: none;
@@ -62,17 +73,20 @@
       cursor: pointer;
       font-size: 0.8rem;
     }
+
     .calendar {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 2rem;
       margin-top: 2rem;
     }
+
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 5px;
     }
+
     .day-cell {
       padding: 10px;
       text-align: center;
@@ -81,23 +95,28 @@
       background: var(--input-bg);
       transition: all 0.2s;
     }
+
     .day-cell:hover {
       background: var(--primary);
     }
+
     .has-bets {
       background: var(--profit-bg);
     }
+
     .month-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
     }
+
     .stats-sidebar {
       background: var(--input-bg);
       padding: 1.5rem;
       border-radius: 1rem;
     }
+
     .bets-modal {
       position: fixed;
       top: 50%;
@@ -110,16 +129,19 @@
       max-width: 500px;
       z-index: 1000;
     }
+
     .bets-list {
       max-height: 400px;
       overflow-y: auto;
     }
+
     .bet-item {
       background: var(--profit-bg);
       padding: 1rem;
       margin: 0.5rem 0;
       border-radius: 8px;
     }
+
     .overlay {
       position: fixed;
       top: 0;
@@ -129,6 +151,13 @@
       background: rgba(0,0,0,0.7);
       backdrop-filter: blur(5px);
       z-index: 999;
+    }
+
+    #profitChart {
+      margin-top: 2rem;
+      background: var(--input-bg);
+      border-radius: 1rem;
+      padding: 1rem;
     }
   </style>
 </head>
@@ -160,85 +189,87 @@
       </div>
     </div>
 
-    <canvas id="profitChart" style="margin-top: 2rem;"></canvas>
+    <canvas id="profitChart"></canvas>
   </div>
 
   <script>
-    let currentUser = null;
-    let userBets = [];
-    let currentDate = new Date();
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFMfmhWveXfy0Q4WYoJdKc_rm_A_EFrM4",
+      authDomain: "odd-caca.firebaseapp.com",
+      projectId: "odd-caca",
+      storageBucket: "odd-caca.appspot.com",
+      messagingSenderId: "574099371131",
+      appId: "1:574099371131:web:0a86ba3ac1b93da3481ede"
+    };
 
-    document.body.onload = () => {
-      const user = localStorage.getItem('currentUser');
-      if(!user) window.location = 'index.html';
-      
-      currentUser = user;
-      const users = JSON.parse(localStorage.getItem('users')) || {};
-      userBets = users[user]?.bets || [];
-      
-      const now = new Date();
-      currentDate = new Date(Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate()
-      ));
-      
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentDate = new Date();
+    let userBets = [];
+
+    auth.onAuthStateChanged(user => {
+      if (!user) window.location.href = 'index.html';
+      else loadBets();
+    });
+
+    async function loadBets() {
+      const snapshot = await db.collection('bets')
+        .where('userId', '==', auth.currentUser.uid)
+        .orderBy('date', 'desc')
+        .get();
+
+      userBets = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date.toDate()
+      }));
+
       updateCalendar();
       updateStats();
       renderChart();
     }
 
-    function formatDateUTC(isoString) {
-      const date = new Date(isoString);
-      return date.toLocaleDateString('pt-BR', {
-        timeZone: 'UTC',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    }
-
-    function formatDateTimeUTC(isoString) {
-      const date = new Date(isoString);
-      return date.toLocaleString('pt-BR', {
-        timeZone: 'UTC',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-
     function updateCalendar() {
       const calendarEl = document.getElementById('calendar');
-      const monthName = currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+      const monthName = currentDate.toLocaleString('pt-BR', { 
+        month: 'long', 
+        year: 'numeric',
+        timeZone: 'UTC'
+      });
+      
       document.getElementById('currentMonth').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
       calendarEl.innerHTML = '';
 
-      const firstDay = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1);
-      const lastDay = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth() + 1, 0);
+      const firstDay = new Date(Date.UTC(
+        currentDate.getUTCFullYear(),
+        currentDate.getUTCMonth(),
+        1
+      ));
+      
+      const lastDay = new Date(Date.UTC(
+        currentDate.getUTCFullYear(),
+        currentDate.getUTCMonth() + 1,
+        0
+      ));
 
-      for(let i = 0; i < firstDay.getUTCDay(); i++) {
+      for (let i = 0; i < firstDay.getUTCDay(); i++) {
         calendarEl.innerHTML += `<div class="day-cell"></div>`;
       }
 
-      for(let day = 1; day <= lastDay.getUTCDate(); day++) {
-        const dateObj = new Date(Date.UTC(
+      for (let day = 1; day <= lastDay.getUTCDate(); day++) {
+        const dateStr = formatDateUTC(new Date(Date.UTC(
           currentDate.getUTCFullYear(),
           currentDate.getUTCMonth(),
           day
-        ));
-        
-        const dateStr = dateObj.toISOString().split('T')[0];
-        
-        const dailyBets = userBets.filter(b => {
-          const betDate = new Date(b.date).toISOString().split('T')[0];
-          return betDate === dateStr;
-        });
+        )));
 
-        const profit = dailyBets.reduce((a, b) => a + parseFloat(b.profit), 0);
+        const dailyBets = userBets.filter(bet => 
+          formatDateUTC(bet.date) === dateStr
+        );
+
+        const profit = dailyBets.reduce((acc, bet) => acc + bet.profit, 0);
         
         const cell = document.createElement('div');
         cell.className = `day-cell ${dailyBets.length > 0 ? 'has-bets' : ''}`;
@@ -251,22 +282,25 @@
       }
     }
 
+    function formatDateUTC(date) {
+      return date.toISOString().split('T')[0];
+    }
+
     function showDayBets(date) {
-      const bets = userBets.filter(b => {
-        const betDate = new Date(b.date).toISOString().split('T')[0];
-        return betDate === date;
-      });
+      const bets = userBets.filter(bet => 
+        formatDateUTC(bet.date) === date
+      );
 
       const modal = document.createElement('div');
       modal.className = 'bets-modal';
       modal.innerHTML = `
-        <h3>Apostas de ${formatDateUTC(date)}</h3>
+        <h3>Apostas de ${new Date(date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</h3>
         <div class="bets-list">
           ${bets.map((bet, index) => `
             <div class="bet-item">
               <p>${index+1}. Valor Total: R$ ${bet.total}</p>
               <p>Lucro: R$ ${bet.profit.toFixed(2)}</p>
-              <small>${formatDateTimeUTC(bet.date)}</small>
+              <small>${bet.date.toLocaleString('pt-BR', { timeZone: 'UTC' })}</small>
             </div>
           `).join('')}
           ${bets.length === 0 ? '<p>Nenhuma aposta neste dia</p>' : ''}
@@ -290,18 +324,19 @@
 
     function updateStats() {
       const monthProfit = userBets
-        .filter(b => {
-          const d = new Date(b.date);
-          return d.getUTCMonth() === currentDate.getUTCMonth() && 
-                 d.getUTCFullYear() === currentDate.getUTCFullYear();
-        })
-        .reduce((a, b) => a + parseFloat(b.profit), 0);
+        .filter(bet => 
+          bet.date.getUTCMonth() === currentDate.getUTCMonth() &&
+          bet.date.getUTCFullYear() === currentDate.getUTCFullYear()
+        )
+        .reduce((acc, bet) => acc + bet.profit, 0);
 
       const yearProfit = userBets
-        .filter(b => new Date(b.date).getUTCFullYear() === currentDate.getUTCFullYear())
-        .reduce((a, b) => a + parseFloat(b.profit), 0);
+        .filter(bet => 
+          bet.date.getUTCFullYear() === currentDate.getUTCFullYear()
+        )
+        .reduce((acc, bet) => acc + bet.profit, 0);
 
-      const allTimeProfit = userBets.reduce((a, b) => a + parseFloat(b.profit), 0);
+      const allTimeProfit = userBets.reduce((acc, bet) => acc + bet.profit, 0);
 
       document.getElementById('monthProfit').textContent = `Lucro do Mês: R$ ${monthProfit.toFixed(2)}`;
       document.getElementById('yearProfit').textContent = `Lucro do Ano: R$ ${yearProfit.toFixed(2)}`;
@@ -309,10 +344,9 @@
     }
 
     function changeMonth(offset) {
-      const newMonth = currentDate.getUTCMonth() + offset;
       currentDate = new Date(Date.UTC(
         currentDate.getUTCFullYear(),
-        newMonth,
+        currentDate.getUTCMonth() + offset,
         1
       ));
       updateCalendar();
@@ -324,10 +358,12 @@
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: userBets.map(b => formatDateTimeUTC(b.date)),
+          labels: userBets.map(bet => 
+            bet.date.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+          ),
           datasets: [{
             label: 'Lucro por Aposta',
-            data: userBets.map(b => b.profit),
+            data: userBets.map(bet => bet.profit),
             borderColor: '#2cb67d',
             backgroundColor: 'rgba(44, 182, 125, 0.1)',
             borderWidth: 2,
@@ -339,17 +375,21 @@
           responsive: true,
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: true }
+            tooltip: { 
+              callbacks: {
+                label: (context) => `Lucro: R$ ${context.raw.toFixed(2)}`
+              }
+            }
           },
           scales: {
             y: { 
-              beginAtZero: true, 
-              grid: { color: 'rgba(255,255,255,0.1)' },
-              ticks: { color: '#fff' }
+              beginAtZero: true,
+              ticks: { color: '#fff' },
+              grid: { color: 'rgba(255,255,255,0.1)' }
             },
             x: { 
-              grid: { display: false },
-              ticks: { color: '#fff' }
+              ticks: { color: '#fff' },
+              grid: { display: false }
             }
           }
         }
@@ -357,9 +397,12 @@
     }
 
     function logout() {
-      localStorage.removeItem('currentUser');
-      window.location.href = 'index.html';
+      auth.signOut();
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!auth.currentUser) window.location.href = 'index.html';
+    });
   </script>
 </body>
 </html>
